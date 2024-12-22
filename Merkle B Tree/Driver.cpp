@@ -14,6 +14,7 @@
 #include <iostream>
 #include <algorithm>
 #include <fstream>
+#include <chrono>
 
 #include "Crypto.h"
 #include "Graph.h"
@@ -29,25 +30,41 @@
 #endif // _WIN32
 
 using namespace std;
-
-#define TIMESOFTEST 100
+using namespace std::chrono;
+#define TIMESOFTEST 2
 
 int main(int argc, char** argv) {
 	
 	// for construction time
-#ifdef _WIN32
-	DWORD begin =  timeGetTime();
-#endif
-	Graph* g = new Graph();
-	g->loadFromFile(argv[1],argv[2]);
-	MerkleBTree* tree = new MerkleBTree(g,3);
-#ifdef _WIN32
-	DWORD end = timeGetTime();
-#endif
-	fprintf(stdout, "Time Used: %.3lf\n", (end-begin)*1.0/1000);
+// #ifdef _WIN32
+// 	DWORD begin =  timeGetTime();
+// #endif
+// 	Graph* g = new Graph();
+// 	g->loadFromFile(argv[1],argv[2]);
+// 	MerkleBTree* tree = new MerkleBTree(g,3);
+// #ifdef _WIN32
+// 	DWORD end = timeGetTime();
+// #endif
+// 	fprintf(stdout, "Time Used: %.3lf\n", (end-begin)*1.0/1000);
+/*
+	 // 记录程序开始时间
+    auto start = high_resolution_clock::now();
 
+    Graph* g = new Graph();
+    g->loadFromFile(argv[1], argv[2]);
+    MerkleBTree* tree = new MerkleBTree(g, 3);
 
-	/*
+    // 记录程序结束时间
+    auto end = high_resolution_clock::now();
+
+    // 计算并输出程序运行时间
+    auto duration = duration_cast<milliseconds>(end - start).count();
+    cout << "Time Used: " << duration << " ms" << endl;
+
+	// 在程序结束时释放分配的内存
+    delete tree;
+    delete g;
+*/
 	if (argc < 4) {
 		cout << "Usage: " << argv[0] << " nodeFilename edgeFilename outputFilename fanout\n";
 		exit(1);
@@ -64,13 +81,13 @@ int main(int argc, char** argv) {
 	outputFileStream << "NodeId,KNN,VOSize\n";
 	cout << "Build Merkle B Tree.\n";
 	MerkleBTree* tree = new MerkleBTree(g,atoi(argv[4]));
-	cout << "Root Digest: ";
+	cout << "Root Digest of Merkle B Tree: ";
 	Crypto::printHashValue(tree->calculateRootDigest());
 	cout << endl;
 	
 	
 	for (int i = 0;i != TIMESOFTEST;i ++) {
-		cout << "Choose a random node.\n";
+		cout << i << " Choose a random node to generate VO & do authentication.\n";
 		int size = g->numberOfNodes();
 		int randomNodeIndex = rand() % (size+1);
 		cout << "Node IndexId: " << randomNodeIndex << "\n";
@@ -78,6 +95,11 @@ int main(int argc, char** argv) {
 		for (int j = 1;j <= 128;j*=2) {
 			cout << "Find KNN: " << j << "\n";
 			vector<Node*> result = g->findKNNAndAllRelatedNodes(randomNodeIndex,j);
+			
+			cout << "KNN And All Related Nodes: ";
+			for (const auto& node : result) {
+    			cout << "Node: " << node << endl;
+			}
 
 			cout << "Generate VO.\n";
 			string VO = tree->generateVO(result);
@@ -90,15 +112,16 @@ int main(int argc, char** argv) {
 			AuthenticationTree* authenticationTree = new AuthenticationTree();
 			cout << authenticationTree->parseVO(VO) << "\n";
 
-			cout << "Root Digest: ";
+			cout << "Root Digest calculated by Authentication Tree: ";
 			Crypto::printHashValue(authenticationTree->getRootDigest());
 			cout << endl;
-
+			cout << "\n";
 			delete authenticationTree;
+			
 		}
 		cout << "\n\n";
 	}
 	outputFileStream.close();
-	*/
+
 	return 0;
 }

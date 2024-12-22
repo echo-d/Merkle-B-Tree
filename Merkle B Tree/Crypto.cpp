@@ -11,10 +11,11 @@
 
 #include "Crypto.h"
 #include "Tools.h"
-#include <openssl\evp.h>
-#include <openssl\rsa.h>
-#include <openssl\pem.h>
-#include <openssl\bio.h>
+#include <openssl/evp.h>
+#include <openssl/rsa.h>
+#include <openssl/pem.h>
+#include <openssl/bio.h>
+#include <openssl/bn.h>
 #include <string>
 
 using namespace std;
@@ -52,7 +53,7 @@ void Crypto::printHashValue(string s) {
 		printf("%02x",(unsigned char)s[i]);
 	}
 }
-
+/**/
 void Crypto::generateRSAKeys(std::string name, int bits, int eInt) {
 	RSA *rsa = RSA_new();
 	BIGNUM *e = BN_new();

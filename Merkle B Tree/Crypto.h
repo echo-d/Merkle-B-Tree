@@ -17,8 +17,8 @@
 #ifndef _CRYPTO_H_
 #define _CRYPTO_H_
 
-#include <openssl\rsa.h>
-#include <openssl\evp.h>
+#include <openssl/rsa.h>
+#include <openssl/evp.h>
 
 #include <string>
 
